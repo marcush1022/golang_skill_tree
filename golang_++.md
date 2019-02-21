@@ -1,0 +1,4 @@
+简单地说, 在golang中++,--操作是语句而不是表达式. 所以a=b++, return x++之类绝对提示错误. 语句是无法放到表达式的位置;
+
+Why are ++ and -- statements and not expressions? And why postfix, not prefix?  
+Without pointer arithmetic, the convenience value of pre- and postfix increment operators drops. By removing them from the expression hierarchy altogether, expression syntax is simplified and the messy issues around order of evaluation of ++ and --(consider f(i++) and p[i] = q[++i]) are eliminated as well. The simplification is significant. As for postfix vs. prefix, either would work fine but the postfix version is more traditional; insistence on prefix arose with the STL, a library for a language whose name contains, ironically, a postfix increment.
