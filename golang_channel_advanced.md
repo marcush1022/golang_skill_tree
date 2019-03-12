@@ -82,6 +82,38 @@ select {
 }
 ```
 
-select 在所有的 case 都阻塞或者没有满足条件时，default 分支就会执行，没有 default 时 select 会阻塞.  
+1. select 在所有的 case 都阻塞或者没有满足条件时，default 分支就会执行，没有 default 时 select 会阻塞.  
+2. select 语句的分支若阻塞相当于未满足选择条件.   
+3. 仅当 select 的分支都求值完成之后，才会开始选择候选分支。这时会选择满足条件的候选分支执行，若所有的候选分支都不满足条件，则会选择默认分支执行。若没有默认分支，则 select 就会阻塞，直到至少有一个候选分支满足条件。一旦有一个候选分支满足条件，select语句（或者它所在的 goroutine）就会被唤醒，这个候选分支就会被执行.  
+4. 若 select 语句发现同时有多个候选分支满足选择条件，则会使用一种伪随机算法在这些分支中选择一个执行.  
+5. select 只能有一个默认分支，并且只有在没有满足条件的候选分支时才会执行，与默认分支的位置无关.  
+
+
+## **RECAP**
+
+1. 可以使用 range 和 for 从通道中获取数据，也可以使用 select 来操纵通道.  
+2. select 是专门为通道设计的，可以包含多个候选分支，每个分支的 case 表达式中都会包含针对某个通道的发送或接收操作.  
+3. 发送和接收的阻塞是 select 进行分支选择的重要依据.
+
+## **QUS**
+
+如果在 select 语句中发现某个通道已经关闭，则怎么屏蔽掉该通道所在的 select 分支？  
+
+```
+for {
+    select {
+        case _, ok := <-=ch1:
+            if !ok {
+                ch1 = make(chan int)
+            }
+        case something:
+            do something
+        default:
+            do something
+    }
+}
+```
+
+
 
 
