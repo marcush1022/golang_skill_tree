@@ -90,7 +90,69 @@ func genCalculator(op operate) calculateFunc {
         return op(x, y), nil
     }
 }
+
+// 使用闭包函数的代码
+x, y = 56, 78
+add := genCalculator(op)
+resutl, err := add(x, y)
+fmt.Println("result = ", result)
 ```
 
-genCalculator 定义了一个匿名的 calculateFunc 类型的函数并将其作为结果返回，**而这个匿名的函数就是一个闭包函数，它使用的变量 op 既代表他的任何参数或结果也不是他自己声明的，而是定义它的 genCalculator 的参数，所以是一个自由变量**。   
+### **Q1: 如何实现闭包**
+
+**闭包是什么:**  
+
+在一个函数中存在对外来标识符的引用，外来标识符既不代表当前函数的任何参数和结果，也是函数内部声明的.  
+有个专门的术语：**自由变量**.  
+
+genCalculator 定义了一个**匿名的 calculateFunc 类型**的函数并将其作为结果返回.  
+**这个匿名的函数就是一个闭包函数，它使用的变量 op 既不是他的任何参数或结果，也不是他自己声明的，而是定义它的 genCalculator 函数的参数，所以是一个自由变量**。   
 这个自由变量代表了什么并不是在定义闭包函数时确定的，而是在 genCalculator 被调用时确定的，**只有给定了该函数的参数 op，才知道其返回的闭包函数可以进行什么运算**。  
+
+当执行到 op == nil 时，go 编译器就会去试图寻找 op 代表的东西，然后发现 op 代表的是 getCalculator 函数的参数，然后将这两者联系起来.  
+
+当程序运行到这里时，op 就是那个参数确定了，这个闭包函数的状态就由不确定变成了确定，或者说转到了闭合的状态，至此也就真正形成了一个闭包.  
+
+**用高阶函数实现闭包是高阶函数的一个作用.**     
+
+**实现闭包的意义:**  
+
+动态生成部分程序逻辑，可以在程序的运行过程中根据需要的生成不同的函数，与 GoF 设计模式中的 "模板方法" 设计模式类似.  
+
+### **Q2: 传入函数的参数怎么样了**
+
+```
+package main
+
+import "fmt"
+
+func main() {
+    array1 := [3]string{"a", "b", "c"}
+    fmt.Println("original array1 = ", array1)
+    array2 := modifyArray(array1)
+    fmt.Println("modified array1 = ", array1)
+    fmt.Println("modified array2 = ", array2)
+}
+
+func modifyArray(arr [3]string) [3]string {
+    a[1] = "x"
+    return a
+}
+```
+
+原数组 array1 没有改变，任何传入函数的参数都会被复制，函数在其内部使用的参数是一个副本，并不是参数的原值.  
+由于数组是值类型，每一次复制都会拷贝它，以及它所有的元素值.  
+
+对于引用类型，slice, map, channel 像上面那样复制它们的值只会拷贝他们本身而已，并不会复制底层的数据，只是浅拷贝不是深拷贝.  
+
+以切片值为例，如此复制的时候只是会复制指向其底层数组的指针，以及他的长度和容量值，底层数组并不会被拷贝.  
+
+注意：即使传入函数的参数是一个值类型的参数值，但如果这个参数中的某个值是引用类型的: 
+
+```
+complexArray1 := [3][]string{
+    []string{"d", "e", "f"},
+    []string{"g", "h", "i"},
+    []string{"a", "b", "c"},
+}
+```
